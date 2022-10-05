@@ -19,6 +19,8 @@ from typing import Tuple
 from perception_eval.common.label import AutowareLabel
 from perception_eval.common.object2d import DynamicObject2D
 from perception_eval.common.object import DynamicObject
+from perception_eval.common.shape import Shape
+from perception_eval.common.shape import ShapeType
 from pyquaternion.quaternion import Quaternion
 
 
@@ -42,7 +44,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.5, 1.5, 1.5),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(1.5, 1.5, 1.5)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.CAR,
             velocity=(1.0, 1.0, 1.0),
@@ -52,7 +54,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(0.5, 0.5, 0.5),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(0.5, 0.5, 0.5)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.BICYCLE,
             velocity=(1.0, 1.0, 1.0),
@@ -62,7 +64,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(-1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.0, 1.0, 1.0),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.CAR,
             velocity=(1.0, 1.0, 1.0),
@@ -74,7 +76,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.0, 1.0, 1.0),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.CAR,
             velocity=(1.0, 1.0, 1.0),
@@ -85,7 +87,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.0, 1.0, 1.0),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.BICYCLE,
             velocity=(1.0, 1.0, 1.0),
@@ -96,7 +98,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(-1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.0, 1.0, 1.0),
+            shape=Shape(type=ShapeType.CYLINDER, size=(1.0, 0.0, 1.0)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.PEDESTRIAN,
             velocity=(1.0, 1.0, 1.0),
@@ -107,7 +109,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
             unix_time=100,
             position=(-1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
-            size=(1.0, 1.0, 1.0),
+            shape=Shape(type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
             semantic_score=0.9,
             semantic_label=AutowareLabel.MOTORBIKE,
             velocity=(1.0, 1.0, 1.0),
