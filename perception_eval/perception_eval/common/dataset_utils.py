@@ -167,7 +167,7 @@ def _convert_nuscenes_box_to_dynamic_object(
     """
     position_: Tuple[float, float, float] = tuple(object_box.center.tolist())  # type: ignore
     orientation_: Quaternion = object_box.orientation
-    shape_: Shape = Shape(type=ShapeType.BOUNDING_BOX, size=tuple(object_box.wlh.tolist()))
+    shape_: Shape = Shape(shape_type=ShapeType.BOUNDING_BOX, size=tuple(object_box.wlh.tolist()))
     semantic_score_: float = 1.0
     semantic_label_: LabelType = label_converter.convert_label(
         label=object_box.name,
@@ -319,7 +319,7 @@ def _get_tracking_data(
     for record_ in past_records_:
         past_positions.append(tuple(record_["translation"]))
         past_orientations.append(Quaternion(record_["rotation"]))
-        past_shapes.append(Shape(type=ShapeType.BOUNDING_BOX, size=record_["size"]))
+        past_shapes.append(Shape(shape_type=ShapeType.BOUNDING_BOX, size=record_["size"]))
         past_velocities.append(nusc.box_velocity(record_["token"]))
 
     return past_positions, past_orientations, past_shapes, past_velocities
