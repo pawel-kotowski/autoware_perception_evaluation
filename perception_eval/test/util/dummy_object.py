@@ -21,10 +21,14 @@ from perception_eval.common.object2d import DynamicObject2D
 from perception_eval.common.object import DynamicObject
 from perception_eval.common.shape import Shape
 from perception_eval.common.shape import ShapeType
+from perception_eval.common.status import FrameID
 from pyquaternion.quaternion import Quaternion
 
 
-def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], List[DynamicObject]]:
+def make_dummy_data(
+    frame_id: FrameID = FrameID.BASE_LINK,
+    use_unique_id: bool = True,
+) -> Tuple[List[DynamicObject], List[DynamicObject]]:
     """[summary]
     Make dummy predicted objects and ground truth objects.
 
@@ -42,6 +46,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
     dummy_estimated_objects: List[DynamicObject] = [
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(1.5, 1.5, 1.5)),
@@ -52,6 +57,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
         ),
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(0.5, 0.5, 0.5)),
@@ -62,6 +68,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
         ),
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(-1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
@@ -74,6 +81,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
     dummy_ground_truth_objects: List[DynamicObject] = [
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
@@ -85,6 +93,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
         ),
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
@@ -96,6 +105,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
         ),
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(-1.0, 1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.CYLINDER, size=(1.0, 0.0, 1.0)),
@@ -107,6 +117,7 @@ def make_dummy_data(use_unique_id: bool = True) -> Tuple[List[DynamicObject], Li
         ),
         DynamicObject(
             unix_time=100,
+            frame_id=frame_id,
             position=(-1.0, -1.0, 1.0),
             orientation=Quaternion([0.0, 0.0, 0.0, 1.0]),
             shape=Shape(shape_type=ShapeType.BOUNDING_BOX, size=(1.0, 1.0, 1.0)),
@@ -130,9 +141,11 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
     Returns:
         List[DynamicObject2D], List[DynamicObject2D]: dummy_estimated_objects and dummy_ground_truth_objects.
     """
+    frame_id = FrameID.CAM_FRONT
     dummy_estimated_objects: List[DynamicObject2D] = [
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=0.9,
             semantic_label=AutowareLabel.CAR,
             roi=(100, 100, 200, 100) if use_roi else None,
@@ -140,6 +153,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
         ),
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=0.9,
             semantic_label=AutowareLabel.BICYCLE,
             roi=(0, 0, 50, 50) if use_roi else None,
@@ -147,6 +161,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
         ),
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=0.9,
             semantic_label=AutowareLabel.CAR,
             roi=(200, 200, 200, 100) if use_roi else None,
@@ -156,6 +171,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
     dummy_ground_truth_objects: List[DynamicObject2D] = [
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=1.0,
             semantic_label=AutowareLabel.CAR,
             roi=(100, 100, 200, 100) if use_roi else None,
@@ -163,6 +179,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
         ),
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=1.0,
             semantic_label=AutowareLabel.BICYCLE,
             roi=(0, 0, 50, 50) if use_roi else None,
@@ -170,6 +187,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
         ),
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=1.0,
             semantic_label=AutowareLabel.PEDESTRIAN,
             roi=(200, 200, 200, 100) if use_roi else None,
@@ -177,6 +195,7 @@ def make_dummy_data2d(use_roi: bool = True) -> Tuple[List[DynamicObject2D], List
         ),
         DynamicObject2D(
             unix_time=100,
+            frame_id=frame_id,
             semantic_score=1.0,
             semantic_label=AutowareLabel.MOTORBIKE,
             roi=(300, 100, 50, 50) if use_roi else None,

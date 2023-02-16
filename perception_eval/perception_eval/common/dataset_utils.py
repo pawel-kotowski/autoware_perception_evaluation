@@ -20,7 +20,6 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-import cv2
 from nuimages import NuImages
 import numpy as np
 from nuscenes.nuscenes import NuScenes
@@ -33,7 +32,9 @@ from perception_eval.common.object2d import DynamicObject2D
 from perception_eval.common.object import DynamicObject
 from perception_eval.common.shape import Shape
 from perception_eval.common.shape import ShapeType
+from perception_eval.common.status import FrameID
 from perception_eval.common.status import Visibility
+from PIL import Image
 from pyquaternion.quaternion import Quaternion
 
 from . import dataset
@@ -49,7 +50,7 @@ def _sample_to_frame(
     sample_token: Any,
     evaluation_task: EvaluationTask,
     label_converter: LabelConverter,
-    frame_id: str,
+    frame_id: FrameID,
     frame_name: str,
     load_raw_data: bool,
 ) -> dataset.FrameGroundTruth:
@@ -61,7 +62,7 @@ def _sample_to_frame(
         sample_token (Any): Nuscenes sample token.
         evaluation_tasks (EvaluationTask): The evaluation task.
         label_converter (LabelConverter): LabelConvertor instance.
-        frame_id (str): base_link or map.
+        frame_id (FrameID): FrameID instance.
         frame_name (str): Name of frame, number of frame is used.
         load_raw_data (bool): Whether load pointcloud/image data.
 
@@ -77,10 +78,8 @@ def _sample_to_frame(
     unix_time_ = sample["timestamp"]
     if "LIDAR_TOP" in sample["data"]:
         lidar_path_token = sample["data"]["LIDAR_TOP"]
-        sensor_name: str = "LIDAR_TOP"
     elif "LIDAR_CONCAT" in sample["data"]:
         lidar_path_token = sample["data"]["LIDAR_CONCAT"]
-        sensor_name: str = "LIDAR_CONCAT"
     else:
         raise ValueError("lidar data isn't found")
     frame_data = nusc.get("sample_data", lidar_path_token)
@@ -91,7 +90,7 @@ def _sample_to_frame(
     if load_raw_data:
         assert lidar_path.endswith(".bin"), f"Error: Unsupported filetype {lidar_path}"
         pointcloud: np.ndarray = np.fromfile(lidar_path, dtype=np.float32)
-        raw_data = {sensor_name: pointcloud.reshape(-1, 5)[:, :4]}
+        raw_data = pointcloud.reshape(-1, 5)[:, :4]
 
     else:
         raw_data = None
@@ -137,7 +136,7 @@ def _sample_to_frame(
 def _convert_nuscenes_box_to_dynamic_object(
     nusc: NuScenes,
     helper: PredictHelper,
-    frame_id: str,
+    frame_id: FrameID,
     object_box: Box,
     unix_time: int,
     evaluation_task: EvaluationTask,
@@ -152,7 +151,7 @@ def _convert_nuscenes_box_to_dynamic_object(
     Args:
         nusc (NuScenes): NuScenes instance.
         helper (PredictHelper): PredictHelper instance.
-        frame_id (str): base_link or map.
+        frame_id (FrameID): FrameID instance, where 3D objects are with respect, BASE_LINK or MAP.
         object_box (Box): Annotation data from nuscenes dataset defined by Box.
         unix_time (int): The unix time [us].
         evaluation_task (EvaluationTask): Evaluation task.
@@ -205,6 +204,7 @@ def _convert_nuscenes_box_to_dynamic_object(
 
     dynamic_object = DynamicObject(
         unix_time=unix_time,
+        frame_id=frame_id,
         position=position_,
         orientation=orientation_,
         shape=shape_,
@@ -233,7 +233,7 @@ def _get_sample_boxes(
     Args:
         nusc (NuScenes): NuScenes instance.
         frame_data (Dict[str, Any]): Set of frame record.
-        frame_id (str): base_link or map.
+        frame_id (FrameID): FrameID instance, where 3D objects are with respect, BASE_LINK or MAP.
         use_sensor_frame (bool): Whether use sensor frame. Defaults to True.
 
     Returns:
@@ -246,10 +246,10 @@ def _get_sample_boxes(
     """
     lidar_path: str
     object_boxes: List[Box]
-    if frame_id == "base_link":
+    if frame_id == FrameID.BASE_LINK:
         # Get boxes moved to ego vehicle coord system.
         lidar_path, object_boxes, _ = nusc.get_sample_data(frame_data["token"])
-    elif frame_id == "map":
+    elif frame_id == FrameID.MAP:
         # Get boxes map based coord system.
         lidar_path = nusc.get_sample_data_path(frame_data["token"])
         object_boxes = nusc.get_boxes(frame_data["token"])
@@ -277,7 +277,7 @@ def _get_sample_boxes(
 def _get_tracking_data(
     nusc: NuScenes,
     helper: PredictHelper,
-    frame_id: str,
+    frame_id: FrameID,
     instance_token: str,
     sample_token: str,
     seconds: float,
@@ -287,7 +287,7 @@ def _get_tracking_data(
     Args:
         nusc (NuScenes): NuScenes instance.
         helper (PredictHelper): PredictHelper instance.
-        frame_id (str): base_link or map.
+        frame_id (FrameID): FrameID instance, where 3D objects are with respect, BASE_LINK or MAP.
         instance_token (str): The unique token to access to instance.
         sample_token (str): The unique Token to access to sample.
         seconds (float): Seconds to reference past/future records.
@@ -298,9 +298,9 @@ def _get_tracking_data(
         past_shapes (List[Shape])
         past_velocities (List[Tuple[float, float]])
     """
-    if frame_id == "base_link":
+    if frame_id == FrameID.BASE_LINK:
         in_agent_frame: bool = True
-    elif frame_id == "map":
+    elif frame_id == FrameID.MAP:
         in_agent_frame: bool = False
     else:
         raise ValueError(f"Unexpected frame_id: {frame_id}")
@@ -362,9 +362,8 @@ def _sample_to_frame_2d(
     sample_token: str,
     evaluation_task: EvaluationTask,
     label_converter: LabelConverter,
-    frame_id: str,
+    frame_id: FrameID,
     frame_name: str,
-    camera_type: str,
     load_raw_data: bool,
 ) -> dataset.FrameGroundTruth:
     """Returns FrameGroundTruth constructed with DynamicObject2D.
@@ -375,9 +374,8 @@ def _sample_to_frame_2d(
         sample_token (str): Sample token.
         evaluation_task (EvaluationTask): 2D evaluation Task.
         label_converter (LabelConverter): LabelConverter instance.
-        frame_id (str): base_link or map.
+        frame_id (FrameID): FrameID instance, where 2D objects are with respect, related to CAM_**.
         frame_name (str): Name of frame.
-        camera_type (str): Name of camera.
         load_raw_data (bool): The flag to load image data.
 
     Returns:
@@ -387,6 +385,7 @@ def _sample_to_frame_2d(
     sample: Dict[str, Any] = nuim.get("sample", sample_token)
 
     unix_time: int = sample["timestamp"]
+    camera_type: str = frame_id.value.upper()
     sample_data_token: str = nusc_sample["data"][camera_type]
 
     object_annotations: List[Dict[str, Any]] = [
@@ -395,7 +394,7 @@ def _sample_to_frame_2d(
 
     if load_raw_data:
         img_path: str = nusc.get_sample_data_path(sample_data_token)
-        raw_data = {camera_type: cv2.imread(img_path)}
+        raw_data = np.array(Image.open(img_path), dtype=np.uint8)
     else:
         raw_data = None
 
@@ -422,6 +421,7 @@ def _sample_to_frame_2d(
 
         object_: DynamicObject2D = DynamicObject2D(
             unix_time=unix_time,
+            frame_id=frame_id,
             semantic_score=1.0,
             semantic_label=semantic_label,
             roi=roi,
